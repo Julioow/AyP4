@@ -7,7 +7,7 @@ class Cancion:
     def duracion_formateada(self):
         minutos = self.duracion // 60
         segundos = self.duracion % 60
-        return minutos,segundos
+        return f"{minutos}:{segundos}"
 class Node:
     def __init__(self, cancion):
         self.cancion = cancion
@@ -71,3 +71,21 @@ class Playlist:
         else:
             self.cola = self.cola.anterior
             self.cola.siguiente = None
+    
+    def mostrar_playlist(self):
+            actual = self.cabeza
+            if actual != None:
+                while actual != None:
+                    print(f"{actual.cancion.titulo}-{actual.cancion.duracion_formateada()} --> ")
+                    actual = actual.siguiente
+                print("Fin...")
+            else:
+                print("Lista vacía")
+            
+cancion1 = Cancion("Soy una gargola", "Jowell & Randy", 212)
+cancion2 = Cancion("Amor", "Zion", 215)
+
+reproductor = Playlist()
+reproductor.insertar_inicio(cancion1)
+reproductor.insertar_inicio(cancion2)
+reproductor.mostrar_playlist()
