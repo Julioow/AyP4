@@ -1,0 +1,514 @@
+"""
+═══════════════════════════════════════════════════════════════════════════════
+                        PARCIAL - CONJUNTOS (C)
+            Verificador de Lotería + Catálogo de Biblioteca con Listas
+═══════════════════════════════════════════════════════════════════════════════
+
+Este archivo contiene ejemplos de:
+
+- Intersección de conjuntos
+- Diferencia de conjuntos
+- Unión de conjuntos
+- Subconjuntos
+- Recorrido de conjuntos implementados con listas enlazadas
+
+La idea es practicar los mismos tipos de ejercicios que pueden aparecer
+en un quiz de Algoritmos.
+"""
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PARTE 1: VERIFICADOR DE LOTERÍA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+"""
+Un sistema de lotería tiene números ganadores y diferentes boletos.
+
+En esta parte utilizamos los conjuntos normales de Python.
+
+Operaciones importantes:
+
+A & B  → Intersección
+         Elementos que están en A Y en B.
+
+A - B  → Diferencia
+         Elementos que están en A pero NO en B.
+
+A | B  → Unión
+         Todos los elementos de A y B sin repetir.
+"""
+
+
+# Números ganadores de la lotería
+numeros_ganadores = {7, 14, 21, 28, 35, 42}
+
+# Boletos de los participantes
+boleto_ana = {7, 12, 21, 33, 42, 45}
+boleto_luis = {3, 14, 28, 35, 40, 42}
+boleto_sara = {1, 8, 15, 22, 29, 36}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PUNTO 1.1: ACIERTOS DE UN BOLETO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def aciertos(boleto):
+    """
+    Retorna los números que aparecen tanto en el boleto como
+    en los números ganadores.
+
+    Esto es una INTERSECCIÓN.
+
+    Ejemplo:
+
+    boleto_ana = {7, 12, 21, 33, 42, 45}
+    ganadores = {7, 14, 21, 28, 35, 42}
+
+    Resultado:
+    {7, 21, 42}
+
+    El símbolo & representa la intersección en Python.
+    """
+
+    return boleto & numeros_ganadores
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PUNTO 1.2: NÚMEROS FALTANTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def numeros_faltantes(boleto):
+    """
+    Retorna los números ganadores que NO estaban en el boleto.
+
+    Esto es una DIFERENCIA.
+
+    La pregunta que debemos hacernos es:
+
+    ¿Qué números están en los ganadores pero no están en el boleto?
+
+    Por eso hacemos:
+
+    numeros_ganadores - boleto
+    """
+
+    return numeros_ganadores - boleto
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PUNTO 1.3: NÚMEROS QUE NADIE ACERTÓ
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def sin_acertar_nadie():
+    """
+    Retorna los números ganadores que no aparecen en ninguno
+    de los tres boletos.
+
+    Primero hacemos una UNIÓN de todos los boletos.
+
+    Después hacemos una DIFERENCIA:
+
+    ganadores - todos_los_boletos
+
+    De esta manera obtenemos los números ganadores que nadie tenía.
+    """
+
+    # Juntamos los números de Ana y Luis
+    union_de_boletos = boleto_ana | boleto_luis
+
+    # Agregamos los números del boleto de Sara
+    union_de_boletos = union_de_boletos | boleto_sara
+
+    # Quitamos de los ganadores los números que aparecieron en algún boleto
+    ningun_acierto = numeros_ganadores - union_de_boletos
+
+    return ningun_acierto
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PARTE 2: CATÁLOGO DE BIBLIOTECA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+"""
+En esta parte NO usamos los conjuntos normales de Python.
+
+Utilizamos nuestra propia clase Conjunto, que funciona mediante
+una lista enlazada.
+
+La estructura es:
+
+cabeza
+   ↓
+┌───────┐     ┌───────┐     ┌───────┐
+│ dato  │ --> │ dato  │ --> │ dato  │ --> None
+└───────┘     └───────┘     └───────┘
+
+Para recorrerla utilizamos:
+
+actual = conjunto.cabeza
+
+while actual:
+    ...
+    actual = actual.siguiente
+"""
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CÓDIGO BASE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class Nodo:
+
+    def __init__(self, dato):
+        # Guarda el dato del nodo
+        self.dato = dato
+
+        # Guarda la referencia al siguiente nodo
+        self.siguiente = None
+
+
+class Conjunto:
+
+    def __init__(self, elementos=None):
+
+        # Al comenzar, el conjunto no tiene nodos
+        self.cabeza = None
+
+        # Cantidad de elementos
+        self.tamaño = 0
+
+        # Si recibimos elementos, los agregamos uno por uno
+        if elementos:
+            for e in elementos:
+                self.agregar(e)
+
+    def esta_vacio(self):
+        """
+        Retorna True si el conjunto está vacío.
+        """
+
+        return self.cabeza is None
+
+    def pertenece(self, x):
+        """
+        Retorna True si x pertenece al conjunto.
+
+        Recorremos todos los nodos buscando el dato.
+        """
+
+        actual = self.cabeza
+
+        while actual:
+
+            if actual.dato == x:
+                return True
+
+            # Pasamos al siguiente nodo
+            actual = actual.siguiente
+
+        # Si terminamos el recorrido y no encontramos el dato
+        return False
+
+    def agregar(self, x):
+        """
+        Agrega x al conjunto si todavía no existe.
+        """
+
+        # Primero verificamos si ya existe
+        if self.pertenece(x):
+            return False
+
+        # Creamos un nuevo nodo
+        nuevo = Nodo(x)
+
+        # El nuevo nodo apunta a la antigua cabeza
+        nuevo.siguiente = self.cabeza
+
+        # Ahora el nuevo nodo se convierte en la cabeza
+        self.cabeza = nuevo
+
+        # Aumentamos el tamaño
+        self.tamaño += 1
+
+        return True
+
+    def __str__(self):
+        """
+        Permite mostrar el conjunto utilizando print().
+        """
+
+        elementos = []
+
+        actual = self.cabeza
+
+        while actual:
+
+            elementos.append(str(actual.dato))
+
+            actual = actual.siguiente
+
+        return "{" + ", ".join(elementos) + "}"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PUNTO 2.1: LIBROS EN AMBAS BIBLIOTECAS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def libros_en_ambas(biblio_a, biblio_b):
+    """
+    Retorna un NUEVO Conjunto con los libros que están en ambas bibliotecas.
+
+    Esto representa una INTERSECCIÓN.
+
+    Pasos:
+
+    1. Crear un conjunto vacío para guardar el resultado.
+    2. Recorrer biblio_a desde su cabeza.
+    3. Preguntar si cada libro también pertenece a biblio_b.
+    4. Si pertenece, agregarlo al resultado.
+    5. Pasar al siguiente nodo.
+    6. Retornar el resultado.
+    """
+
+    # Conjunto donde guardaremos los libros en común
+    resultado = Conjunto()
+
+    # Comenzamos a recorrer la biblioteca A
+    actual = biblio_a.cabeza
+
+    while actual:
+
+        # Preguntamos si el libro también está en la biblioteca B
+        if biblio_b.pertenece(actual.dato):
+
+            # Si está, lo agregamos al resultado
+            resultado.agregar(actual.dato)
+
+        # Pasamos al siguiente libro
+        actual = actual.siguiente
+
+    return resultado
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PUNTO 2.2: LIBROS EXCLUSIVOS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def libros_exclusivos(biblio_a, biblio_b):
+    """
+    Retorna un NUEVO Conjunto con los libros que están en A
+    pero NO están en B.
+
+    Esto representa una DIFERENCIA.
+
+    Pasos:
+
+    1. Crear un conjunto vacío.
+    2. Recorrer A.
+    3. Preguntar si el libro NO pertenece a B.
+    4. Si no pertenece, agregarlo al resultado.
+    5. Pasar al siguiente nodo.
+    6. Retornar el resultado.
+    """
+
+    # Conjunto donde guardaremos los libros exclusivos
+    resultado = Conjunto()
+
+    # Comenzamos en la cabeza de A
+    actual = biblio_a.cabeza
+
+    while actual:
+
+        # Si el libro NO está en B, es exclusivo de A
+        if not biblio_b.pertenece(actual.dato):
+
+            resultado.agregar(actual.dato)
+
+        # Pasamos al siguiente libro
+        actual = actual.siguiente
+
+    return resultado
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PUNTO 2.3: VERIFICAR SI UNA BIBLIOTECA CONTIENE TODOS LOS LIBROS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def contiene_todos(biblio_grande, biblio_chica):
+    """
+    Retorna True si biblio_grande contiene TODOS los libros
+    de biblio_chica.
+
+    Es decir:
+
+    biblio_chica ⊆ biblio_grande
+
+    Pasos:
+
+    1. Recorrer biblio_chica.
+    2. Preguntar si cada libro pertenece a biblio_grande.
+    3. Si encontramos uno que NO pertenece, retornamos False.
+    4. Si terminamos todo el recorrido sin encontrar faltantes,
+       retornamos True.
+
+    IMPORTANTE:
+
+    No necesitamos crear un conjunto de resultados porque aquí
+    solamente queremos saber si se cumple una condición.
+    """
+
+    # Comenzamos a recorrer la biblioteca chica
+    actual = biblio_chica.cabeza
+
+    while actual:
+
+        # Si encontramos un libro que la biblioteca grande NO tiene,
+        # entonces ya sabemos que no contiene todos los libros.
+        if not biblio_grande.pertenece(actual.dato):
+
+            return False
+
+        # El libro sí estaba, así que seguimos con el siguiente
+        actual = actual.siguiente
+
+    # Terminamos el recorrido y ningún libro faltó
+    return True
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CÓDIGO DE PRUEBA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+if __name__ == "__main__":
+
+    print("=" * 60)
+    print("PARTE 1: VERIFICADOR DE LOTERÍA")
+    print("=" * 60)
+
+    # Mostrar los números de cada boleto
+    print(f"\nGanadores: {sorted(numeros_ganadores)}")
+    print(f"Ana:       {sorted(boleto_ana)}")
+    print(f"Luis:      {sorted(boleto_luis)}")
+    print(f"Sara:      {sorted(boleto_sara)}")
+
+    # ---------------------------------------------------------------
+    # Punto 1.1
+    # ---------------------------------------------------------------
+
+    print("\n--- ACIERTOS ---")
+
+    print(f"Aciertos de Ana: {aciertos(boleto_ana)}")
+    print("Esperado: {7, 21, 42}")
+
+    print(f"Aciertos de Luis: {aciertos(boleto_luis)}")
+    print("Esperado: {14, 28, 35, 42}")
+
+    print(f"Aciertos de Sara: {aciertos(boleto_sara)}")
+    print("Esperado: set()")
+
+    # ---------------------------------------------------------------
+    # Punto 1.2
+    # ---------------------------------------------------------------
+
+    print("\n--- NÚMEROS FALTANTES ---")
+
+    print(f"Faltantes de Ana: {numeros_faltantes(boleto_ana)}")
+    print("Esperado: {14, 28, 35}")
+
+    print(f"Faltantes de Luis: {numeros_faltantes(boleto_luis)}")
+
+    print(f"Faltantes de Sara: {numeros_faltantes(boleto_sara)}")
+
+    # ---------------------------------------------------------------
+    # Punto 1.3
+    # ---------------------------------------------------------------
+
+    print("\n--- NÚMEROS QUE NADIE ACERTÓ ---")
+
+    print(f"Sin acertar nadie: {sin_acertar_nadie()}")
+
+    # ---------------------------------------------------------------
+    # PARTE 2
+    # ---------------------------------------------------------------
+
+    print("\n" + "=" * 60)
+    print("PARTE 2: CATÁLOGO DE BIBLIOTECA")
+    print("=" * 60)
+
+    # Crear las dos bibliotecas
+    biblio_norte = Conjunto([
+        "Quijote",
+        "Hamlet",
+        "1984",
+        "Cien Años",
+        "Rayuela"
+    ])
+
+    biblio_sur = Conjunto([
+        "Hamlet",
+        "Odisea",
+        "1984",
+        "Aleph",
+        "Rayuela"
+    ])
+
+    print(f"\nNorte: {biblio_norte}")
+    print(f"Sur:   {biblio_sur}")
+
+    # ---------------------------------------------------------------
+    # Punto 2.1
+    # ---------------------------------------------------------------
+
+    print("\n--- LIBROS EN AMBAS ---")
+
+    print(f"En ambas: {libros_en_ambas(biblio_norte, biblio_sur)}")
+
+    print("Esperado: {Hamlet, 1984, Rayuela}")
+
+    # ---------------------------------------------------------------
+    # Punto 2.2
+    # ---------------------------------------------------------------
+
+    print("\n--- LIBROS EXCLUSIVOS ---")
+
+    print(
+        f"Solo en Norte: "
+        f"{libros_exclusivos(biblio_norte, biblio_sur)}"
+    )
+
+    print("Esperado: {Quijote, Cien Años}")
+
+    print(
+        f"Solo en Sur: "
+        f"{libros_exclusivos(biblio_sur, biblio_norte)}"
+    )
+
+    print("Esperado: {Odisea, Aleph}")
+
+    # ---------------------------------------------------------------
+    # Punto 2.3
+    # ---------------------------------------------------------------
+
+    pedido = Conjunto(["Hamlet", "1984"])
+
+    print("\n--- VERIFICAR SI CONTIENE TODOS ---")
+
+    print(f"Pedido: {pedido}")
+
+    print(
+        f"¿Norte tiene todo? "
+        f"{contiene_todos(biblio_norte, pedido)}"
+    )
+
+    print("Esperado: True")
+
+    pedido2 = Conjunto(["Hamlet", "Odisea"])
+
+    print(f"\nPedido: {pedido2}")
+
+    print(
+        f"¿Norte tiene todo? "
+        f"{contiene_todos(biblio_norte, pedido2)}"
+    )
+
+    print("Esperado: False")
